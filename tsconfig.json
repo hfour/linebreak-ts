@@ -1,0 +1,25 @@
+{
+  "include": ["src"],
+  "compilerOptions": {
+    "preserveWatchOutput": true,
+    "rootDir": "./src",
+    "outDir": "./build",
+    "sourceMap": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "noEmitOnError": true,
+    "baseUrl": "./",
+    "target": "es2015",
+    "allowJs": false,
+    "allowSyntheticDefaultImports": false,
+    "skipLibCheck": true,
+    "pretty": true,
+    "declaration": true
+  }
+}
+
