@@ -1,6 +1,6 @@
 {
   "name": "linebreak-ts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Typescript version of linebreak algorithm",
   "main": "build/index.js",
   "types": "./build/index.d.ts",
@@ -29,7 +29,9 @@
   "bugs": {
     "url": "https://github.com/hfour/linebreak-ts/issues"
   },
-  "files": ["build"],
+  "files": [
+    "build"
+  ],
   "homepage": "https://github.com/hfour/linebreak-ts#readme",
   "jest": {
     "verbose": true,
