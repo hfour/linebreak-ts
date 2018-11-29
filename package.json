@@ -16,6 +16,21 @@
     "ts-jest": "^23.10.5",
     "typescript": "^3.1.6"
   },
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hfour/linebreak-ts.git"
+  },
+  "keywords": [
+    "linebreak"
+  ],
+  "bugs": {
+    "url": "https://github.com/hfour/linebreak-ts/issues"
+  },
+  "files": ["build"],
+  "homepage": "https://github.com/hfour/linebreak-ts#readme",
   "jest": {
     "verbose": true,
     "globals": {
