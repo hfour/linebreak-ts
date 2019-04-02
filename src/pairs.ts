@@ -260,7 +260,7 @@ export const pairTable = [
     DI_BRK,
   ],
   [
-    PR_BRK, // Changed from DI_BRK not to swallow the dot at ".["
+    DI_BRK, // Original: DI_BRK, Ours: PR_BRK not to swallow the dot at ".["
     PR_BRK,
     PR_BRK,
     IN_BRK,
