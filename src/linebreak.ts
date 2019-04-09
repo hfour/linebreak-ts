@@ -57,22 +57,21 @@ export class Break {
    */
   required: boolean;
 
-  constructor(position: number, spacePos: number, required: boolean = false) {
+  constructor(position: number, required: boolean = false) {
     this.position = position;
-    this.spacePos = spacePos;
     this.required = required;
   }
 }
 
 export class LineBreaker {
-  node: TextLike;
+  text: TextLike;
   pos: number;
   lastPos: number;
   curClass: number;
   nextClass: number;
 
-  constructor(node: TextLike) {
-    this.node = node;
+  constructor(text: TextLike) {
+    this.text = text;
     this.pos = 0;
     this.lastPos = 0;
     this.curClass = null;
@@ -80,10 +79,10 @@ export class LineBreaker {
   }
 
   nextCodePoint() {
-    var code = this.node.charCodeAt(this.pos++);
-    var next = this.node.charCodeAt(this.pos);
+    let code = this.text.charCodeAt(this.pos++);
+    let next = this.text.charCodeAt(this.pos);
     // if a surrogate pair
-    if (0xd800 <= code && code <= 0xdbff && (0xdc00 <= next && next <= 0xdfff)) {
+    if (0xd800 <= code && code <= 0xdbff && 0xdc00 <= next && next <= 0xdfff) {
       this.pos++;
       return (code - 0xd800) * 0x400 + (next - 0xdc00) + 0x10000;
     }
@@ -98,17 +97,16 @@ export class LineBreaker {
   }
 
   nextBreak(): Break {
-    var cur: number = null;
-    var lastClass: number = null;
-    var shouldBreak = false;
-    var lastSpacePos = null;
+    let cur: number = null;
+    let lastClass: number = null;
+    let shouldBreak = false;
 
     // get the first char if we're at the beginning of the string
     if (this.curClass === null) {
       this.curClass = mapFirst(this.nextCharClass());
     }
 
-    while (this.pos < this.node.length) {
+    while (this.pos < this.text.length) {
       this.lastPos = this.pos;
       lastClass = this.nextClass;
       this.nextClass = this.nextCharClass();
@@ -116,18 +114,14 @@ export class LineBreaker {
       // explicit newline
       if (this.curClass === BK || (this.curClass === CR && this.nextClass !== LF)) {
         this.curClass = mapFirst(mapClass(this.nextClass));
-        return new Break(this.lastPos, this.lastPos, true);
+        return new Break(this.lastPos, true);
       }
 
       // handle classes not handled by the pair table
       switch (this.nextClass) {
-        case SP: {
-          if (lastClass !== SP) {
-            lastSpacePos = this.lastPos;
-          }
+        case SP:
           cur = this.curClass;
           break;
-        }
         case BK:
         case LF:
         case NL:
@@ -147,7 +141,7 @@ export class LineBreaker {
       if (cur !== null) {
         this.curClass = cur;
         if (this.nextClass === CB) {
-          return new Break(this.lastPos, lastSpacePos !== null ? lastSpacePos : this.lastPos);
+          return new Break(this.lastPos);
         }
         continue;
       }
@@ -177,14 +171,14 @@ export class LineBreaker {
       }
       this.curClass = this.nextClass;
       if (shouldBreak) {
-        return new Break(this.lastPos, lastSpacePos !== null ? lastSpacePos : this.lastPos);
+        return new Break(this.lastPos);
       }
     }
 
-    if (this.pos >= this.node.length) {
-      if (this.lastPos < this.node.length) {
-        this.lastPos = this.node.length;
-        return new Break(this.node.length, lastSpacePos !== null ? lastSpacePos : this.node.length);
+    if (this.pos >= this.text.length) {
+      if (this.lastPos < this.text.length) {
+        this.lastPos = this.text.length;
+        return new Break(this.text.length);
       } else {
         return null;
       }
