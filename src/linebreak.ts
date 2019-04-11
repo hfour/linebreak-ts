@@ -57,32 +57,33 @@ export class Break {
    */
   required: boolean;
 
-  constructor(position: number, required: boolean = false) {
+  constructor(position: number, spacePos: number, required: boolean = false) {
     this.position = position;
+    this.spacePos = spacePos;
     this.required = required;
   }
 }
 
 export class LineBreaker {
-  text: TextLike;
+  node: TextLike;
   pos: number;
   lastPos: number;
   curClass: number;
   nextClass: number;
 
-  constructor(text: TextLike) {
-    this.text = text;
+  constructor(node: TextLike) {
+    this.node = node;
     this.pos = 0;
     this.lastPos = 0;
     this.curClass = null;
     this.nextClass = null;
   }
 
-  nextCodePoint() {
-    let code = this.text.charCodeAt(this.pos++);
-    let next = this.text.charCodeAt(this.pos);
+  private nextCodePoint() {
+    var code = this.node.charCodeAt(this.pos++);
+    var next = this.node.charCodeAt(this.pos);
     // if a surrogate pair
-    if (0xd800 <= code && code <= 0xdbff && 0xdc00 <= next && next <= 0xdfff) {
+    if (0xd800 <= code && code <= 0xdbff && (0xdc00 <= next && next <= 0xdfff)) {
       this.pos++;
       return (code - 0xd800) * 0x400 + (next - 0xdc00) + 0x10000;
     }
@@ -97,16 +98,16 @@ export class LineBreaker {
   }
 
   nextBreak(): Break {
-    let cur: number = null;
+    let lastSpacePos = null;
     let lastClass: number = null;
-    let shouldBreak = false;
+    let shouldBreak: boolean = false;
 
     // get the first char if we're at the beginning of the string
     if (this.curClass === null) {
       this.curClass = mapFirst(this.nextCharClass());
     }
 
-    while (this.pos < this.text.length) {
+    while (this.pos < this.node.length) {
       this.lastPos = this.pos;
       lastClass = this.nextClass;
       this.nextClass = this.nextCharClass();
@@ -114,10 +115,11 @@ export class LineBreaker {
       // explicit newline
       if (this.curClass === BK || (this.curClass === CR && this.nextClass !== LF)) {
         this.curClass = mapFirst(mapClass(this.nextClass));
-        return new Break(this.lastPos, true);
+        return new Break(this.lastPos, this.lastPos, true);
       }
 
-      // handle classes not handled by the pair table
+      // handle classes not handled by the pair table/
+      let cur: number = null;
       switch (this.nextClass) {
         case SP:
           cur = this.curClass;
@@ -138,16 +140,20 @@ export class LineBreaker {
           break;
       }
 
+      // Trigger lastSpacePos when going from nonspace->space
+      if (this.nextClass === SP && lastClass !== SP) {
+        lastSpacePos = this.lastPos;
+      }
+
       if (cur !== null) {
         this.curClass = cur;
         if (this.nextClass === CB) {
-          return new Break(this.lastPos);
+          return new Break(this.lastPos, lastSpacePos !== null ? lastSpacePos : this.lastPos);
         }
         continue;
       }
 
       // if not handled already, use the pair table
-      shouldBreak = false;
       switch (pairTable[this.curClass][this.nextClass]) {
         case DI_BRK: // direct break
           shouldBreak = true;
@@ -169,16 +175,21 @@ export class LineBreaker {
         default:
           break;
       }
+
+      // Reset lastSpacePosition if a non-space character encountered
+      // Prevent swallowing "]swallowed"
+      if (!shouldBreak && this.nextClass !== SP) lastSpacePos = null;
+
       this.curClass = this.nextClass;
       if (shouldBreak) {
-        return new Break(this.lastPos);
+        return new Break(this.lastPos, lastSpacePos !== null ? lastSpacePos : this.lastPos);
       }
     }
 
-    if (this.pos >= this.text.length) {
-      if (this.lastPos < this.text.length) {
-        this.lastPos = this.text.length;
-        return new Break(this.text.length);
+    if (this.pos >= this.node.length) {
+      if (this.lastPos < this.node.length) {
+        this.lastPos = this.node.length;
+        return new Break(this.node.length, lastSpacePos !== null ? lastSpacePos : this.node.length);
       } else {
         return null;
       }

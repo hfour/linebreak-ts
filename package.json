@@ -15,6 +15,7 @@
     "@types/jest": "^23.3.9",
     "@types/node": "^11.13.0",
     "chai": "^4.2.0",
+    "fast-check": "^1.13.0",
     "jest": "^23.6.0",
     "ts-jest": "^23.10.5",
     "typescript": "^3.1.6"
