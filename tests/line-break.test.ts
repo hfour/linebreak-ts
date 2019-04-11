@@ -23,6 +23,33 @@ describe('line breaking', () => {
     );
   });
 
+  it('should not swallow closing bracket', () => {
+    const txtary = [
+      {
+        word: ' yellow  ]s',
+        space: '   ',
+      },
+      {
+        word: 'mellow',
+        space: '   ',
+      },
+    ];
+    let txt = txtary.map(t => t.word + t.space).join('');
+
+    let lb = new LineBreaker(txt);
+    let brk: Break = null;
+    let lastBrk: Break = { spacePos: 0, position: 0, required: false };
+    let idx = 0;
+    while ((brk = lb.nextBreak())) {
+      const word = txt.substring(lastBrk.position, brk.spacePos);
+      const space = txt.substring(brk.spacePos, brk.position);
+      expect(word).toEqual(txtary[idx].word);
+      expect(space).toEqual(txtary[idx].space);
+      lastBrk = brk;
+      idx++;
+    }
+  });
+
   it('should split spaces consistently', () => {
     const txtary = [
       {
