@@ -11,7 +11,7 @@ function StringArbitrary(charArb: fc.Arbitrary<string>, aLength?: number, bLengt
 }
 
 function spacedArbitrary(charArb: fc.Arbitrary<string>, minLength?: number, maxLength?: number) {
-  const spaceChars = fc.frequency({ arbitrary: charArb, weight: 100 }, { arbitrary: fc.constant(' '), weight: 1 });
+  const spaceChars = fc.frequency({ arbitrary: charArb, weight: 15 }, { arbitrary: fc.constant(' '), weight: 1 });
   return StringArbitrary(spaceChars, minLength, maxLength);
 }
 

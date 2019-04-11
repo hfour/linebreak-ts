@@ -2,13 +2,10 @@ import * as fc from 'fast-check';
 import { LineBreaker, Break } from '../src';
 import { asciiSpaced, hasNonSpace } from './string-gen.util';
 
-// const customAscii = asciiSpaced().map(s => `aa ${s} aa`);
-const customAscii = asciiSpaced();
-
 describe('line breaking', () => {
   it('should not gobble up characters from generator', () => {
     fc.assert(
-      fc.property(customAscii, txt => {
+      fc.property(asciiSpaced(), txt => {
         let lb = new LineBreaker(txt);
         let brk: Break = null;
         let lastBrk: Break = new Break(0, 0, false);
