@@ -79,7 +79,7 @@ export class LineBreaker {
     this.nextClass = null;
   }
 
-  nextCodePoint() {
+  private nextCodePoint() {
     var code = this.node.charCodeAt(this.pos++);
     var next = this.node.charCodeAt(this.pos);
     // if a surrogate pair
@@ -98,10 +98,9 @@ export class LineBreaker {
   }
 
   nextBreak(): Break {
-    var cur: number = null;
-    var lastClass: number = null;
-    var shouldBreak = false;
-    var lastSpacePos = null;
+    let lastSpacePos = null;
+    let lastClass: number = null;
+    let shouldBreak: boolean = false;
 
     // get the first char if we're at the beginning of the string
     if (this.curClass === null) {
@@ -119,15 +118,12 @@ export class LineBreaker {
         return new Break(this.lastPos, this.lastPos, true);
       }
 
-      // handle classes not handled by the pair table
+      // handle classes not handled by the pair table/
+      let cur: number = null;
       switch (this.nextClass) {
-        case SP: {
-          if (lastClass !== SP) {
-            lastSpacePos = this.lastPos;
-          }
+        case SP:
           cur = this.curClass;
           break;
-        }
         case BK:
         case LF:
         case NL:
@@ -144,6 +140,11 @@ export class LineBreaker {
           break;
       }
 
+      // Trigger lastSpacePos when going from nonspace->space
+      if (this.nextClass === SP && lastClass !== SP) {
+        lastSpacePos = this.lastPos;
+      }
+
       if (cur !== null) {
         this.curClass = cur;
         if (this.nextClass === CB) {
@@ -153,7 +154,6 @@ export class LineBreaker {
       }
 
       // if not handled already, use the pair table
-      shouldBreak = false;
       switch (pairTable[this.curClass][this.nextClass]) {
         case DI_BRK: // direct break
           shouldBreak = true;
@@ -175,6 +175,11 @@ export class LineBreaker {
         default:
           break;
       }
+
+      // Reset lastSpacePosition if a non-space character encountered
+      // Prevent swallowing "]swallowed"
+      if (!shouldBreak && this.nextClass !== SP) lastSpacePos = null;
+
       this.curClass = this.nextClass;
       if (shouldBreak) {
         return new Break(this.lastPos, lastSpacePos !== null ? lastSpacePos : this.lastPos);
